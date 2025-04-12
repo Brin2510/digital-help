@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhistleSafe Voice Assistant</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #00ffc8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #assistantBox {
+      text-align: center;
+      max-width: 500px;
+      background: #222;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px #00ffc8aa;
+    }
+    button {
+      background: #00ffc8;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      color: #000;
+    }
+    button:hover {
+      background: #000;
+      color: #00ffc8;
+      box-shadow: 0 0 12px #00ffc8;
+    }
+    #response {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      min-height: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div id="assistantBox">
+    <h2>🎙️ Voice Assistant</h2>
+    <p>Ask me to file a report, check status, or show contact info.</p>
+    <button onclick="startListening()">🎤 Talk to Assistant</button>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    const responseEl = document.getElementById('response');
+    const synth = window.speechSynthesis;
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      synth.speak(utter);
+    }
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        handleCommand(transcript);
+      };
+
+      recognition.onerror = function(event) {
+        responseEl.textContent = "Error: " + event.error;
+      };
+    }
+
+    function handleCommand(command) {
+      let reply = "Sorry, I didn't catch that.";
+
+      if (command.includes('file a report')) {
+        reply = "Sure. Redirecting you to the report page.";
+        speak(reply);
+        responseEl.textContent = reply;
+        setTimeout(() => {
+          window.location.href = 'report.html';
+        }, 2000);
+
+      } else if (command.includes('check status')) {
+        reply = "Alright. Taking you to the status tracker.";
+        speak(reply);
+        responseEl.textContent = reply;
+        setTimeout(() => {
+          window.location.href = 'status.html';
+        }, 2000);
+
+      } else if (command.includes('contact') || command.includes('help')) {
+        reply = "You can contact us at help@whistlesafe.org or call our helpline 1800-000-111.";
+        speak(reply);
+        responseEl.textContent = reply;
+
+      } else {
+        reply = "I can help you file a report, check status, or show contact info.";
+        speak(reply);
+        responseEl.textContent = reply;
+      }
+    }
+  </script>
+</body>
+</html>
