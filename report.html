@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhistleSafe - Submit Report</title>
+  <style>
+    body {
+      background: #000;
+      font-family: 'Segoe UI', sans-serif;
+      color: #00ffc8;
+      padding: 40px;
+      margin: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px #00ffc833;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    textarea, input, select, button {
+      width: 100%;
+      background: #111;
+      border: 1px solid #00ffc8aa;
+      color: #00ffc8;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+
+    .btn {
+      background: #00ffc8;
+      color: black;
+      padding: 14px 25px;
+      border: none;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background: black;
+      color: #00ffc8;
+      box-shadow: 0 0 15px #00ffc8;
+    }
+
+    .voice-btn {
+      background: none;
+      border: 2px dashed #00ffc8;
+      padding: 12px;
+      margin-top: -5px;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .summary-box {
+      background: #0c0c0c;
+      padding: 20px;
+      margin-top: 20px;
+      border-left: 3px solid #00ffc8;
+      font-style: italic;
+      display: none;
+    }
+
+    #voicePreview {
+      font-size: 0.9rem;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+
+    .case-id {
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      color: #888;
+    }
+
+    .escape-btn {
+      text-align: right;
+      font-size: 0.85rem;
+      color: #ff7777;
+      cursor: pointer;
+    }
+
+    .processing {
+      display: none;
+      font-size: 1.2rem;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .feedback-section {
+      margin-top: 30px;
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>File Your Anonymous Report</h2>
+
+    <div class="case-id" id="caseIdText"></div>
+
+    <select id="reportType">
+      <option value="">-- Select Report Type --</option>
+      <option>Corruption</option>
+      <option>Harassment</option>
+      <option>Discrimination</option>
+      <option>Financial Misuse</option>
+      <option>Other</option>
+    </select>
+
+    <input type="datetime-local" id="incidentTime" placeholder="Incident Time (optional)" />
+
+    <textarea id="reportText" rows="6" placeholder="Describe the incident..."></textarea>
+
+    <div class="record-section">
+      <button class="voice-btn" onclick="startDictation()">🎤 Record with Voice</button>
+      <span id="voicePreview">Voice transcription will appear here...</span>
+    </div>
+
+    <input type="file" id="fileUpload" multiple />
+
+    <button class="btn" onclick="generateSummary()">Generate Summary</button>
+    <button class="btn" onclick="submitReport()">Submit Report</button>
+
+    <div class="processing" id="processingMessage">
+      Processing your report... Please wait.
+    </div>
+
+    <div class="feedback-section" id="feedbackSection">
+      <strong>Admin Feedback:</strong>
+      <p>Your report has been received. We will review it shortly.</p>
+    </div>
+
+    <div class="escape-btn" onclick="quickEscape()">
+      ✨ <strong>Quick Escape</strong> (Press for decoy)
+    </div>
+  </div>
+
+  <script>
+    const caseId = "WS-" + Math.floor(Math.random() * 100000000);
+    document.getElementById("caseIdText").innerText = `🆔 Case ID: ${caseId}`;
+
+    // 🎤 Voice to Text
+    function startDictation() {
+      if ('webkitSpeechRecognition' in window) {
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.onresult = function(event) {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById('reportText').value += transcript + " ";
+          document.getElementById('voicePreview').innerText = `🎙️ Captured: ${transcript}`;
+        };
+        recognition.onerror = function() {
+          alert("Voice recognition error.");
+        };
+        recognition.start();
+      } else {
+        alert("Speech recognition not supported.");
+      }
+    }
+
+    // ✨ Fake NLP Summary
+    function generateSummary() {
+      const text = document.getElementById('reportText').value.trim();
+      if (!text) {
+        alert("Please enter or dictate your report first.");
+        return;
+      }
+      const summary = text.length > 100
+        ? "This report includes serious allegations and should be reviewed by internal compliance officers."
+        : "A brief report highlighting suspicious behavior.";
+      document.getElementById("summaryContent").innerText = summary;
+      document.getElementById("summaryBox").style.display = "block";
+    }
+
+    // ✅ Submit Report Simulation
+    function submitReport() {
+      const text = document.getElementById('reportText').value.trim();
+      const type = document.getElementById('reportType').value;
+      const incidentTime = document.getElementById('incidentTime').value;
+
+      if (!text || !type) {
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      // Show fake processing animation
+      document.getElementById("processingMessage").style.display = "block";
+
+      setTimeout(function() {
+        // Hide processing message after fake processing time
+        document.getElementById("processingMessage").style.display = "none";
+        document.getElementById("feedbackSection").style.display = "block";
+
+        // Fake admin feedback
+        alert(`
+        ✅ Report Submitted Successfully:
+
+        Case ID: ${caseId}
+        Type: ${type}
+        Incident Time: ${incidentTime || "Not specified"}
+        Summary: Your report has been submitted successfully.
+        `);
+      }, 3000); // Fake processing time (3 seconds)
+    }
+
+    // 🧨 Fake Redirect Button (Quick Escape)
+    function quickEscape() {
+      alert("Redirecting to decoy...");
+      window.location.href = "https://www.wikipedia.org";
+    }
+  </script>
+
+</body>
+</html>
