@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - WhistleSafe</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #0e0e0e;
+      color: #00ffc8;
+    }
+    header {
+      background-color: #000;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5rem;
+      text-shadow: 0 0 5px #00ffc8;
+    }
+    .container {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    input[type="text"] {
+      padding: 10px;
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #00ffc8;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover {
+      background: #000;
+      color: #00ffc8;
+      box-shadow: 0 0 10px #00ffc8;
+    }
+    .report {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 10px #00ffc822;
+    }
+    .report h3 {
+      margin: 0 0 10px;
+    }
+    .tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      background: #00ffc855;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
+    .summary {
+      margin-top: 10px;
+      font-style: italic;
+      color: #ccc;
+    }
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>📊 Admin Dashboard - WhistleSafe</header>
+  <div class="container">
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search by ID or Subject...">
+      <button onclick="exportToPDF()">Export to PDF</button>
+      <button onclick="clearAll()">Clear All Reports</button>
+    </div>
+    <div id="reportContainer"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const container = document.getElementById('reportContainer');
+    const searchBox = document.getElementById('search');
+
+    const reports = JSON.parse(localStorage.getItem('caseReports')) || [];
+
+    function displayReports(filter = '') {
+      container.innerHTML = '';
+      const filtered = reports.filter(r =>
+        r.caseId.toLowerCase().includes(filter.toLowerCase()) ||
+        r.subject.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p>No matching reports found.</p>';
+        return;
+      }
+
+      filtered.forEach(report => {
+        const div = document.createElement('div');
+        div.className = 'report';
+        div.innerHTML = `
+          <h3>Case ID: ${report.caseId}</h3>
+          <p><strong>Subject:</strong> ${report.subject}</p>
+          <p><strong>Description:</strong> ${report.description}</p>
+          <p><strong>Urgency:</strong> ${report.urgency}</p>
+          <p><strong>Submitted On:</strong> ${new Date(report.timestamp).toLocaleString()}</p>
+          <div class="tags">
+            <span class="tag">${report.department}</span>
+            <span class="tag">${report.status || 'Pending'}</span>
+          </div>
+          <div class="summary">🧠 Summary AI: This complaint is classified under ${report.urgency} urgency related to ${report.department}.</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 10;
+      reports.forEach((r, index) => {
+        doc.text(`Case ID: ${r.caseId}`, 10, y);
+        doc.text(`Subject: ${r.subject}`, 10, y += 10);
+        doc.text(`Description: ${r.description}`, 10, y += 10);
+        doc.text(`Urgency: ${r.urgency}`, 10, y += 10);
+        doc.text(`Department: ${r.department}`, 10, y += 10);
+        doc.text(`Submitted On: ${new Date(r.timestamp).toLocaleString()}`, 10, y += 10);
+        y += 20;
+        if (y > 270) {
+          doc.addPage();
+          y = 10;
+        }
+      });
+      doc.save('case_reports.pdf');
+    }
+
+    function clearAll() {
+      if (confirm('Are you sure you want to clear all reports?')) {
+        localStorage.removeItem('caseReports');
+        location.reload();
+      }
+    }
+
+    searchBox.addEventListener('input', e => {
+      displayReports(e.target.value);
+    });
+
+    displayReports();
+  </script>
+</body>
+</html>
